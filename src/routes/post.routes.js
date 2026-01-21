@@ -9,5 +9,6 @@ router.post('/create', verifyToken, uploadCloud.single('image'), postController.
 router.get('/all', postController.getAllPosts);
 router.put('/:id/like', verifyToken, postController.likePost);
 router.get('/user/:userId', postController.getUserPosts);
+router.delete('/:id', verifyToken, postController.deletePost);
 
 module.exports = router;

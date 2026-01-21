@@ -44,19 +44,36 @@ exports.likePost = async (req, res) => {
         const post = await Post.findByPk(req.params.id);
         if (!post) return res.status(404).json({ message: "Không tìm thấy bài viết" });
 
+        const userId = req.user.id; // Lấy từ token xác thực
         let currentLikes = post.likes || [];
-        const userId = req.user.id;
 
         if (currentLikes.includes(userId)) {
-            // Nếu đã like rồi thì Unlike (Xóa ID khỏi mảng)
+            // Đã like rồi -> Unlike
             currentLikes = currentLikes.filter(id => id !== userId);
         } else {
-            // Nếu chưa like thì thêm ID vào mảng
+            // Chưa like -> Thêm like
             currentLikes.push(userId);
         }
 
         await post.update({ likes: currentLikes });
-        res.json({ message: "Thao tác thành công", totalLikes: currentLikes.length });
+        res.json({ message: "Thành công", likes: currentLikes });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.deletePost = async (req, res) => {
+    try {
+        const post = await Post.findByPk(req.params.id);
+        if (!post) return res.status(404).json({ message: "Không tìm thấy bài viết" });
+
+        // Kiểm tra quyền sở hữu
+        if (post.userId !== req.user.id) {
+            return res.status(403).json({ message: "Bạn không có quyền xóa bài viết này" });
+        }
+
+        await post.destroy();
+        res.json({ message: "Xóa bài viết thành công" });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
