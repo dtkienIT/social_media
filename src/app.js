@@ -2,9 +2,13 @@ require('dotenv').config();
 const express = require('express');
 const { connectDB, sequelize } = require('./config/database');
 const authRoutes = require('./routes/auth.routes');
+const postRoutes = require('./routes/post.routes');
 const app = express();
+
 app.use(express.json());
 app.use('/api/auth', authRoutes);
+app.use('/api/posts', postRoutes);
+
 // Kết nối và đồng bộ Database
 connectDB();
 
