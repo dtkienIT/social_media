@@ -61,3 +61,16 @@ exports.likePost = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.getUserPosts = async (req, res) => {
+    try {
+        const posts = await Post.findAll({
+            where: { userId: req.params.userId },
+            include: [{ model: User, attributes: ['fullName', 'avatar'] }],
+            order: [['createdAt', 'DESC']]
+        });
+        res.json(posts);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

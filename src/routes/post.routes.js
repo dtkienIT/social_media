@@ -8,5 +8,6 @@ const uploadCloud = require('../middlewares/upload');
 router.post('/create', verifyToken, uploadCloud.single('image'), postController.createPost);
 router.get('/all', postController.getAllPosts);
 router.put('/:id/like', verifyToken, postController.likePost);
+router.get('/user/:userId', postController.getUserPosts);
 
 module.exports = router;
