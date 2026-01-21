@@ -2,7 +2,8 @@ const { Sequelize } = require('sequelize');
 
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: 'postgres',
-  logging: false,
+  protocol: 'postgres',
+  logging: false, 
   dialectOptions: {
     ssl: {
       require: true,
@@ -14,9 +15,9 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
 const connectDB = async () => {
   try {
     await sequelize.authenticate();
-    console.log('✅ Kết nối PostgreSQL thành công!');
+    console.log('✅ PostgreSQL Connected!');
   } catch (error) {
-    console.error('❌ Lỗi kết nối Database:', error.message);
+    console.error('❌ Database Connection Error:', error.message);
   }
 };
 
