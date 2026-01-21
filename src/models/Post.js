@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
+const User = require('./User'); // Import User để tạo quan hệ
 
 const Post = sequelize.define('Post', {
     id: {
@@ -12,13 +13,12 @@ const Post = sequelize.define('Post', {
         allowNull: false
     },
     image: {
-        type: DataTypes.STRING, // Lưu link ảnh từ Cloudinary
+        type: DataTypes.STRING,
         allowNull: true
     }
 });
 
-// Thiết lập quan hệ: Một User có nhiều Post
-const User = require('./User');
+// Quan hệ: Một User có nhiều bài Post
 User.hasMany(Post, { foreignKey: 'userId', onDelete: 'CASCADE' });
 Post.belongsTo(User, { foreignKey: 'userId' });
 
