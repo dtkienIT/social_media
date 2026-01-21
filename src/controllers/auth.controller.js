@@ -5,13 +5,20 @@ const bcrypt = require('bcryptjs');
 exports.register = async (req, res) => {
   try {
     const { fullName, email, password } = req.body;
-    const userExists = await User.findOne({ where: { email } });
-    if (userExists) return res.status(400).json({ message: "Email đã tồn tại" });
+    
+    // Nếu có file gửi lên, lấy URL từ Cloudinary, nếu không dùng ảnh mặc định
+    const avatarUrl = req.file ? req.file.path : 'https://bit.ly/default-avatar';
 
-    const user = await User.create({ fullName, email, password });
-    res.status(201).json({ message: "Đăng ký thành công", userId: user.id });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const newUser = await User.create({
+      fullName,
+      email,
+      password,
+      avatar: avatarUrl // Lưu link ảnh vào Postgres
+    });
+
+    res.status(201).json({ message: 'Đăng ký thành công!', user: newUser });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
