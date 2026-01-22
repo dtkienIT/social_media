@@ -1,5 +1,4 @@
-const User = require('../models/User');
-const Post = require('../models/Post'); // Đảm bảo đã import model Post
+const { User, Post, Comment } = require('../models/index');
 
 // 1. Cập nhật thông tin cá nhân
 exports.updateProfile = async (req, res) => {
@@ -42,20 +41,29 @@ exports.updateProfile = async (req, res) => {
 
 // 2. Lấy thông tin cơ bản của User (Để hiện tên và ảnh trên trang Profile)
 exports.getUserProfile = async (req, res) => {
-  try {
-    const user = await User.findByPk(req.params.userId, {
-      attributes: ['id', 'fullName', 'avatar']
-    });
+    try {
+        const user = await User.findByPk(req.params.id, {
+            attributes: { exclude: ['password'] },
+            include: [{
+                model: Post,
+                // Lấy cả bình luận của từng bài viết
+                include: [{ 
+                    model: Comment, 
+                    include: [{ model: User, attributes: ['fullName', 'avatar'] }] 
+                }],
+                order: [['createdAt', 'DESC']]
+            }]
+        });
 
-    if (!user) {
-      return res.status(404).json({ message: "Không tìm thấy người dùng" });
+        if (!user) return res.status(404).json({ message: "Người dùng không tồn tại" });
+
+        // Tính tổng số like từ tất cả bài viết của User này
+        const totalLikes = user.Posts.reduce((acc, post) => acc + (post.likes?.length || 0), 0);
+
+        res.json({ user, totalLikes });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
-
-    // Trả về object user để Frontend dùng: res.data.user
-    res.json({ user });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
 };
 
 // 3. Lấy danh sách bài viết của User
