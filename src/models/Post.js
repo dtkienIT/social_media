@@ -17,8 +17,8 @@ const Post = sequelize.define('Post', {
         allowNull: true
     },
     likes: {
-    type: DataTypes.ARRAY(DataTypes.UUID),
-    defaultValue: []
+    type: DataTypes.JSON,
+    defaultValue: [] 
     }
 });
 

@@ -51,20 +51,32 @@ exports.likePost = async (req, res) => {
         const post = await Post.findByPk(req.params.id);
         if (!post) return res.status(404).json({ message: "Không tìm thấy bài viết" });
 
-        const userId = req.user.id; // Lấy từ token xác thực
-        let currentLikes = post.likes || [];
+        // Đảm bảo userId luôn cùng kiểu dữ liệu (thường là String từ Token)
+        const userId = String(req.user.id); 
+        
+        // Tạo một bản sao của mảng likes để xử lý (tránh lỗi tham chiếu)
+        let currentLikes = post.likes ? [...post.likes] : [];
 
-        if (currentLikes.includes(userId)) {
-            // Đã like rồi -> Unlike
-            currentLikes = currentLikes.filter(id => id !== userId);
+        // Kiểm tra xem userId đã tồn tại trong mảng chưa
+        const index = currentLikes.indexOf(userId);
+
+        if (index !== -1) {
+            // Đã like rồi -> Unlike (Dislike)
+            currentLikes.splice(index, 1);
         } else {
             // Chưa like -> Thêm like
             currentLikes.push(userId);
         }
 
-        await post.update({ likes: currentLikes });
+        // Cập nhật lại bài viết với mảng mới
+        // Sử dụng thuộc tính changed để ép Sequelize nhận diện thay đổi với kiểu JSON
+        post.likes = currentLikes;
+        post.changed('likes', true); 
+        await post.save();
+
         res.json({ message: "Thành công", likes: currentLikes });
     } catch (error) {
+        console.error("Lỗi Like:", error);
         res.status(500).json({ error: error.message });
     }
 };
