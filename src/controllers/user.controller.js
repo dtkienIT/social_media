@@ -42,26 +42,41 @@ exports.updateProfile = async (req, res) => {
 // 2. Lấy thông tin cơ bản của User (Để hiện tên và ảnh trên trang Profile)
 exports.getUserProfile = async (req, res) => {
     try {
-        const user = await User.findByPk(req.params.id, {
+        // Sử dụng userId để khớp với params từ Route
+        const id = req.params.userId || req.params.id; 
+
+        const user = await User.findByPk(id, {
             attributes: { exclude: ['password'] },
             include: [{
                 model: Post,
-                // Lấy cả bình luận của từng bài viết
                 include: [{ 
                     model: Comment, 
+                    // Bỏ 'as' nếu bạn đã bỏ alias trong index.js như hướng dẫn trước
                     include: [{ model: User, attributes: ['fullName', 'avatar'] }] 
-                }],
-                order: [['createdAt', 'DESC']]
-            }]
+                }]
+            }],
+            // Order phải nằm ở cấp độ của Model mà bạn muốn sắp xếp
+            order: [[Post, 'createdAt', 'DESC']] 
         });
 
         if (!user) return res.status(404).json({ message: "Người dùng không tồn tại" });
 
-        // Tính tổng số like từ tất cả bài viết của User này
-        const totalLikes = user.Posts.reduce((acc, post) => acc + (post.likes?.length || 0), 0);
+        // Phải dùng user.Posts (viết hoa chữ P) vì Sequelize mặc định viết hoa tên Model trong mảng include
+        const posts = user.Posts || [];
+        const totalLikes = posts.reduce((acc, post) => acc + (post.likes?.length || 0), 0);
 
-        res.json({ user, totalLikes });
+        res.json({ 
+            user: {
+                id: user.id,
+                fullName: user.fullName,
+                avatar: user.avatar,
+                // Trả về posts ở đây để Frontend dễ xử lý
+                posts: posts 
+            }, 
+            totalLikes 
+        });
     } catch (error) {
+        console.error("Lỗi Controller:", error);
         res.status(500).json({ error: error.message });
     }
 };
