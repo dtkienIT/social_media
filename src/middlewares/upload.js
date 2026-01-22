@@ -1,14 +1,20 @@
 const multer = require('multer');
-const path = require('path'); // THÊM DÒNG NÀY VÀO ĐẦU FILE
+const path = require('path');
+const fs = require('fs'); // Thêm thư viện fs (File System)
+
+const uploadDir = 'uploads/facebook_clone_uploads/';
+
+// Kiểm tra nếu thư mục chưa tồn tại thì tạo mới
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Đảm bảo thư mục này tồn tại
-    cb(null, 'uploads/facebook_clone_uploads/');
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    // Bây giờ path.extname sẽ hoạt động vì đã được khai báo
-    const ext = path.extname(file.originalname); 
+    const ext = path.extname(file.originalname);
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, file.fieldname + '-' + uniqueSuffix + ext);
   }
