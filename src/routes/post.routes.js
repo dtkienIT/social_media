@@ -10,6 +10,6 @@ router.get('/all', postController.getAllPosts);
 router.put('/:id/like', verifyToken, postController.likePost);
 router.get('/user/:userId', postController.getUserPosts);
 router.delete('/:id', verifyToken, postController.deletePost);
-router.post('/users/update', erifyToken, postController.updateProfile)
+router.post('/users/update', verifyToken, postController.updateProfile)
 
 module.exports = router;
